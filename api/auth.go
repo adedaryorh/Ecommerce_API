@@ -110,7 +110,6 @@ func (a *Auth) register(c *gin.Context) {
 		Username:       user.Username,
 		Role:           user.Role,
 	}
-
 	newUser, err := a.server.queries.CreateUser(context.Background(), arg)
 	if err != nil {
 		if pgErr, ok := err.(*pq.Error); ok {

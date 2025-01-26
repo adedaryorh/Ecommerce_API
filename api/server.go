@@ -44,7 +44,7 @@ func NewServer(envPath string) *Server {
 	if err != nil {
 		panic(fmt.Sprintf("Error connecting to DB: %v", err))
 	}
-	//tokenController = utils.NewJWTToken(config)
+	tokenController := utils.NewJWTToken(config)
 
 	q := db.New(conn)
 
@@ -56,7 +56,7 @@ func NewServer(envPath string) *Server {
 		queries:         q,
 		router:          g,
 		config:          config,
-		tokenController: utils.NewJWTToken(config),
+		tokenController: tokenController,
 	}
 }
 
@@ -68,6 +68,7 @@ func (s *Server) Start(port int) {
 
 	User{}.router(s)
 	Auth{}.router(s)
+	(&Product{}).router(s)
 
 	s.router.Run(fmt.Sprintf(":%v", port))
 }

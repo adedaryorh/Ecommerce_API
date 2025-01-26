@@ -1,0 +1,33 @@
+psql -h localhost -U your_username -d your_database_name
+
+
+CREATE OR REPLACE FUNCTION create_first_admin(email TEXT, username TEXT, password TEXT)
+RETURNS void AS
+$$
+DECLARE
+    existing_admin_count INT;
+BEGIN
+    -- Check if any admins already exist
+    SELECT COUNT(*) INTO existing_admin_count FROM users WHERE role = 'admin';
+
+    IF existing_admin_count = 0 THEN
+        -- If no admin exists, create the first admin
+        INSERT INTO users (email, username, hashed_password, role)
+        VALUES (
+            email,
+            username,
+            crypt(password, gen_salt('bf')), -- Hash the password
+            'admin'
+        );
+    ELSE
+        RAISE EXCEPTION 'Admin already exists. Cannot create a new admin.';
+    END IF;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
+SELECT create_first_admin('admin@gmail.com', 'adminuser1', 'adminpassword');
+
+SELECT * FROM users WHERE email = 'admin@gmail.com';

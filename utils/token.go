@@ -2,8 +2,9 @@ package utils
 
 import (
 	"fmt"
-	"github.com/golang-jwt/jwt"
 	"time"
+
+	"github.com/golang-jwt/jwt"
 )
 
 type JWTToken struct {
@@ -11,8 +12,9 @@ type JWTToken struct {
 }
 type jwtClaim struct {
 	jwt.StandardClaims
-	UserId int64 `json:"user_id"`
-	Exp    int64 `json:"exp"`
+	UserId int64  `json:"user_id"`
+	Role   string `json:"role"`
+	Exp    int64  `json:"exp"`
 }
 
 func NewJWTToken(config *Config) *JWTToken {
@@ -33,7 +35,7 @@ func (j *JWTToken) CreateToken(user_id int64) (string, error) {
 	return string(tokenString), nil
 }
 
-func (j *JWTToken) VerifyToken(tokenString string) (int64, error) {
+func (j *JWTToken) VerifyToken(tokenString string) (int64, string, error) { // Update return types
 	token, err := jwt.ParseWithClaims(tokenString, &jwtClaim{}, func(token *jwt.Token) (interface{}, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Invalid Authentication token")
@@ -41,15 +43,14 @@ func (j *JWTToken) VerifyToken(tokenString string) (int64, error) {
 		return []byte(j.config.Signing_key), nil
 	})
 	if err != nil {
-		return 0, fmt.Errorf("Invalid Authentication token")
+		return 0, "", fmt.Errorf("Invalid Authentication token")
 	}
 	claims, ok := token.Claims.(*jwtClaim)
 	if !ok {
-		return 0, fmt.Errorf("Invalid Authentication token")
+		return 0, "", fmt.Errorf("Invalid Authentication token")
 	}
 	if claims.Exp < time.Now().Unix() {
-		return 0, fmt.Errorf("token expired")
+		return 0, "", fmt.Errorf("token expired")
 	}
-	return claims.UserId, nil
-
+	return claims.UserId, claims.Role, nil // Return userId and role
 }

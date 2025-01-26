@@ -19,7 +19,7 @@ VALUES ($1, $2, $3, $4) RETURNING id, name, description, price, stock, created_a
 type CreateProductParams struct {
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
-	Price       string         `json:"price"`
+	Price       float64         `json:"price"`
 	Stock       int32          `json:"stock"`
 }
 
@@ -120,7 +120,7 @@ WHERE id = $6 RETURNING id, name, description, price, stock, created_at, updated
 type UpdateProductParams struct {
 	Name        string         `json:"name"`
 	Description sql.NullString `json:"description"`
-	Price       string         `json:"price"`
+	Price       float64         `json:"price"`
 	Stock       int32          `json:"stock"`
 	UpdatedAt   time.Time      `json:"updated_at"`
 	ID          int64          `json:"id"`
