@@ -1,4 +1,4 @@
-package api
+package api_errors
 
 import (
 	"context"
@@ -73,7 +73,17 @@ func (p ProductResponse) toProductResponse(product *db.Product) ProductResponse 
 	}
 }
 
-// Create a new product.
+// @Summary Create Product
+// @Description Create a new product (admin only)
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param product body ProductParams true "Product Details"
+// @Success 201 {object} api_errors.ProductResponse
+// @Failure 400 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /products/createProduct [post]
 func (p *Product) createProduct(c *gin.Context) {
 	var params ProductParams
 	if err := c.ShouldBindJSON(&params); err != nil {
@@ -104,7 +114,17 @@ func (p *Product) createProduct(c *gin.Context) {
 	c.JSON(http.StatusCreated, ProductResponse{}.toProductResponse(&product))
 }
 
-// Fetch details of a specific product by ID.
+// @Summary Get Product
+// @Description Retrieve a specific product by ID
+// @Tags Products
+// @Produce json
+// @Param id path string true "Product ID"
+// @Success 200 {object} api_errors.ProductResponse
+// @Failure 400 {object} api_errors.ApiError
+// @Failure 404 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /products/{id} [get]
 func (p *Product) getProduct(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -124,7 +144,16 @@ func (p *Product) getProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, ProductResponse{}.toProductResponse(&product))
 }
 
-// List all products with pagination.
+// @Summary List Products
+// @Description Retrieve paginated list of products
+// @Tags Products
+// @Produce json
+// @Param limit query int false "Number of products to retrieve" default(10)
+// @Param offset query int false "Offset for pagination" default(0)
+// @Success 200 {object} api_errors.ProductResponse
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /products [get]
 func (p *Product) listProducts(c *gin.Context) {
 	limit := int32(10)
 	offset := int32(0)
@@ -155,7 +184,19 @@ func (p *Product) listProducts(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"products": response, "limit": limit, "offset": offset})
 }
 
-// Update a product by ID.
+// @Summary Update Product
+// @Description Update an existing product (admin only)
+// @Tags Products
+// @Accept json
+// @Produce json
+// @Param id path string true "Product ID"
+// @Param product body ProductParams true "Product Update Details"
+// @Success 200 {object} api_errors.ProductResponse
+// @Failure 400 {object} api_errors.ApiError
+// @Failure 404 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /products/{id} [put]
 func (p *Product) updateProduct(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
@@ -197,14 +238,22 @@ func (p *Product) updateProduct(c *gin.Context) {
 	c.JSON(http.StatusOK, ProductResponse{}.toProductResponse(&product))
 }
 
-// Delete a product by ID.
+// @Summary Delete Product
+// @Description Delete a product by ID (admin only)
+// @Tags Products
+// @Param id path string true "Product ID"
+// @Success 200 {object} api_errors.ApiError
+// @Failure 400 {object} api_errors.ApiError
+// @Failure 404 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /products/{id} [delete]
 func (p *Product) deleteProduct(c *gin.Context) {
 	id, err := strconv.ParseInt(c.Param("id"), 10, 64)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid product ID"})
 		return
 	}
-
 	err = p.server.queries.DeleteProduct(context.Background(), id)
 	if err == sql.ErrNoRows {
 		c.JSON(http.StatusNotFound, gin.H{"error": "Product not found"})

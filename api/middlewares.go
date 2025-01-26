@@ -1,4 +1,4 @@
-package api
+package api_errors
 
 import (
 	"context"
@@ -12,15 +12,15 @@ import (
 func (s *Server) AuthenticatedMiddleware() gin.HandlerFunc {
 	return func(c *gin.Context) {
 		token := c.GetHeader("Authorization")
+		fmt.Println("Raw Authorization Header:", token)
 
 		if token == "" {
-			c.JSON(http.StatusUnauthorized, gin.H{"message": "unauthorized request"})
+			c.JSON(http.StatusUnauthorized, gin.H{"message": "no authorization token"})
 			c.Abort()
 			return
 		}
 
 		tokenSplit := strings.Split(token, " ")
-
 		if len(tokenSplit) != 2 || strings.ToLower(tokenSplit[0]) != "bearer" {
 			c.JSON(http.StatusUnauthorized, gin.H{"message": "invalid token, expects bearer token"})
 			c.Abort()
@@ -40,8 +40,6 @@ func (s *Server) AuthenticatedMiddleware() gin.HandlerFunc {
 
 		fmt.Println("User ID from token:", userId)
 		fmt.Println("User Role from token:", role)
-
-		// Store user_id and role in context
 		c.Set("user_id", userId)
 		c.Set("role", role)
 
@@ -57,14 +55,12 @@ func RoleBasedMiddleware(server *Server, role string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		userID, ok := value.(int64)
 		if !ok {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Unauthorized"})
 			c.Abort()
 			return
 		}
-
 		// Fetch the user from the database using the userID
 		user, err := server.queries.GetUserByID(context.Background(), userID)
 		if err != nil {
@@ -72,7 +68,6 @@ func RoleBasedMiddleware(server *Server, role string) gin.HandlerFunc {
 			c.Abort()
 			return
 		}
-
 		// Check if the user has the required role
 		if user.Role != role {
 			c.JSON(http.StatusForbidden, gin.H{"error": "Forbidden"})

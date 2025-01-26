@@ -2,9 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/adedaryorh/ecommerceapi/api"
+	api "github.com/adedaryorh/ecommerceapi/api"
+	_ "github.com/swaggo/files"
+	_ "github.com/swaggo/gin-swagger"
 )
 
+// @title Ecommerca Backend Application
+// @version 1.0
+// @description This is my first version API for an ecommerce simple model.
+// @BasePath /localhost:8000/
 func main() {
 	fmt.Println("Hello welcome to world of ecommerce ")
 	server := api.NewServer(".")

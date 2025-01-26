@@ -1,4 +1,4 @@
-package api
+package api_errors
 
 import (
 	"context"
@@ -23,6 +23,16 @@ func (a Auth) router(server *Server) {
 	serverGroup.POST("register", a.register)
 }
 
+// @Summary User Login
+// @Description Authenticate user and return JWT token
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body UserParams true "Login Credentials"
+// @Success 200 {object} map[string]string "Token response"
+// @Failure 400 {object} api_errors.ApiError "Bad Request"
+// @Failure 500 {object} api_errors.ApiError "Internal Server Error"
+// @Router /auth/login [post]
 func (a Auth) login(c *gin.Context) {
 	user := new(UserParams)
 
@@ -52,6 +62,18 @@ func (a Auth) login(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"token": token})
 }
 
+// @Summary User Registration
+// @Description Register a new user (admin registration requires admin privileges)
+// @Tags Users
+// @Accept json
+// @Produce json
+// @Param user body UserParams true "Registration Details"
+// @Success 201 {object} UserResponse "Successful registration"
+// @Failure 400 {object} api_errors.ApiError "Bad Request"
+// @Failure 401 {object} api_errors.ApiError "Unauthorized"
+// @Failure 403 {object} api_errors.ApiError "Forbidden"
+// @Failure 500 {object} api_errors.ApiError "Internal Server Error"
+// @Router /auth/register [post]
 func (a *Auth) register(c *gin.Context) {
 	var user UserParams
 
@@ -64,13 +86,11 @@ func (a *Auth) register(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and Username are required"})
 		return
 	}
-
 	// Ensure that the role is valid (either 'admin' or 'user')
 	if user.Role != "admin" && user.Role != "user" {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
 		return
 	}
-
 	// If role is 'admin', ensure that the requesting user is an admin (this check should be done for logged-in users)
 	if user.Role == "admin" {
 		// Fetch user from context (logged-in user)

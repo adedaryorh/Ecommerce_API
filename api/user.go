@@ -1,4 +1,4 @@
-package api
+package api_errors
 
 import (
 	"context"
@@ -24,6 +24,17 @@ func (u User) router(server *Server) {
 	serverGroup.GET("/me", u.getLoggedInUser)
 }
 
+// @Summary Get User By ID
+// @Description Retrieve a user by their ID
+// @Tags Users
+// @Produce json
+// @Param id path string true "User ID"
+// @Success 200 {object} UserResponse
+// @Failure 400 {object} api_errors.ApiError
+// @Failure 404 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /users/{id} [get]
 func (u *User) getUserByID(c *gin.Context) {
 	id := c.Param("id")
 
@@ -41,6 +52,14 @@ func (u *User) getUserByID(c *gin.Context) {
 	c.JSON(http.StatusOK, user)
 }
 
+// @Summary List Users
+// @Description Retrieve a list of users
+// @Tags Users
+// @Produce json
+// @Success 200 {array} UserResponse
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /users [get]
 func (u *User) listUsers(c *gin.Context) {
 	arg := db.ListUserParams{
 		Offset: 0,
@@ -69,6 +88,15 @@ type UserParams struct {
 	Role     string `json:"role" binding:"required,oneof=admin user"`
 }
 
+// @Summary Get Logged-In User
+// @Description Retrieve details of the authenticated user
+// @Tags Users
+// @Produce json
+// @Success 200 {object} UserResponse
+// @Failure 401 {object} api_errors.ApiError
+// @Failure 500 {object} api_errors.ApiError
+// @Security BearerAuth
+// @Router /users/me [get]
 func (u *User) getLoggedInUser(c *gin.Context) {
 	value, exists := c.Get("user_id") // Change this to match the key you set
 	if !exists {
