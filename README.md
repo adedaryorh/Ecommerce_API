@@ -36,14 +36,9 @@ Setup Instructions
 
 1. Clone the Repository
 
-git clone <repository-url>
-cd ecommerce_backend
+git clone https://github.com/adedaryorh/Ecommerce_API.git
 
 2. Set Up Environment Variables
-
-Copy the example environment file and update it with your configuration:
-
-cp env.env .env
 
 Edit .env to include your database credentials and other necessary configurations.
 
@@ -57,15 +52,13 @@ go mod tidy
 
 To generate Swagger documentation, run the following command:
 
-swag init -g main.go --output docs
+swag init
 
 5. Run the Application
 
 You can run the application using the following methods:
 
-Using Air (Development Mode)
-
-air
+Using Air (Testing Mode)
 
 Using CompileDaemon (Development Mode)
 
@@ -74,8 +67,6 @@ CompileDaemon -command="go run main.go"
 Using Go Command
 
 go run main.go
-
-Using Docker ComposeDaemon
 
 To run the application with Docker:
 
@@ -129,32 +120,10 @@ Running Tests
 
 go test ./...
 
-Code Formatting
-
-gofmt -w .
 
 Running Make Commands
 
-The project includes a Makefile for running common tasks efficiently. Example:
-
-make run
-
-Deployment
-
-For production deployment, consider using Docker or deploying the binary executable.
-
-Troubleshooting
-
-Ensure all environment variables are correctly set.
-
-Verify Docker services are running correctly if using Docker ComposeDaemon.
-
-Check logs for errors using:
-
-docker-compose logs -f
-
-Installation Commands for Linux
-
+The project includes a Makefile for running common tasks efficiently.
 
 # Install Go
 sudo apt update && sudo apt install -y golang
