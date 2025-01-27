@@ -4,21 +4,21 @@ This project is an e-commerce backend application built with Go. It provides a s
 
 Technologies Used
 
-Go (Gin Framework): Used to build a high-performance RESTful API.
+1. Go (Gin Framework): Used to build a high-performance RESTful API.
 
-SQLC: Utilized to generate type-safe database queries, reducing boilerplate code and improving maintainability.
+2. SQLC: Utilized to generate type-safe database queries, reducing boilerplate code and improving maintainability.
 
-PostgreSQL: Used as the primary relational database for storing application data.
+3. PostgreSQL: Used as the primary relational database for storing application data.
 
-Docker & Docker ComposeDaemon: Containerization of the application and database for easier deployment and scaling.
+4. Docker & Docker Compose: Containerization of the application and database for easier deployment and scaling.
 
-Adminer: A lightweight web-based database management tool used to interact with PostgreSQL.
+5. Adminer: A lightweight web-based database management tool that interacts with PostgreSQL.
 
-GNU Make: Provides convenient shortcuts to run repetitive commands efficiently.
+5. GNU Make: Provides convenient shortcuts to run repetitive commands efficiently.
 
-Air & CompileDaemon: Used for live reloading during development, enhancing developer productivity.
+6. Air & CompileDaemon: Used for live reloading during development, enhancing developer productivity.
 
-dbdiagram.io: Used to design and visualize the database schema structure.
+7. dbdiagram.io: Used to design and visualize the database schema structure.
 
 Prerequisites
 
