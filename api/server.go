@@ -62,7 +62,13 @@ func NewServer(envPath string) *Server {
 
 func (s *Server) initializeRoutes() {
 	router := s.router
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+
+	router.GET("/swagger/*any", func(c *gin.Context) {
+		fmt.Println("Swagger request received")
+		ginSwagger.WrapHandler(swaggerFiles.Handler)(c)
+	})
+	
+	//router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	// Public routes (accessible by any authenticated user)
 	// Public routes (accessible by any authenticated user)
 	// @Summary Create Order

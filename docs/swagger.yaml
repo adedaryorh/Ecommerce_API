@@ -1,4 +1,4 @@
-basePath: /localhost:8000/
+basePath: /
 definitions:
   api_errors.ApiError:
     properties:
@@ -41,6 +41,17 @@ definitions:
         type: integer
       updated_at:
         type: string
+    type: object
+  api_errors.UpdatePasswordRequest:
+    properties:
+      current_password:
+        type: string
+      new_password:
+        minLength: 6
+        type: string
+    required:
+    - current_password
+    - new_password
     type: object
   api_errors.UserParams:
     properties:
@@ -199,7 +210,7 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/api_errors.ApiError'
-      summary: User Login
+      summary: Users Login
       tags:
       - Users
   /auth/register:
@@ -494,6 +505,40 @@ paths:
       tags:
       - Users
   /users/{id}:
+    delete:
+      description: Delete a user account
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+      security:
+      - BearerAuth: []
+      summary: Delete User
+      tags:
+      - Users
     get:
       description: Retrieve a user by their ID
       parameters:
@@ -524,6 +569,55 @@ paths:
       security:
       - BearerAuth: []
       summary: Get User By ID
+      tags:
+      - Users
+  /users/{id}/password:
+    put:
+      consumes:
+      - application/json
+      description: Update a user's password
+      parameters:
+      - description: User ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Password update parameters
+        in: body
+        name: password
+        required: true
+        schema:
+          $ref: '#/definitions/api_errors.UpdatePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/api_errors.UserResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/api_errors.ApiError'
+      security:
+      - BearerAuth: []
+      summary: Update User Password
       tags:
       - Users
   /users/me:

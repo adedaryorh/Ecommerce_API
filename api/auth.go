@@ -4,6 +4,7 @@ import (
 	"context"
 	"database/sql"
 	"net/http"
+	"strings"
 
 	db "github.com/adedaryorh/ecommerceapi/db/sqlc"
 	"github.com/adedaryorh/ecommerceapi/utils"
@@ -23,7 +24,7 @@ func (a Auth) router(server *Server) {
 	serverGroup.POST("register", a.register)
 }
 
-// @Summary User Login
+// @Summary Users Login
 // @Description Authenticate user and return JWT token
 // @Tags Users
 // @Accept json
@@ -74,6 +75,90 @@ func (a Auth) login(c *gin.Context) {
 // @Failure 403 {object} api_errors.ApiError "Forbidden"
 // @Failure 500 {object} api_errors.ApiError "Internal Server Error"
 // @Router /auth/register [post]
+func (a *Auth) register(c *gin.Context) {
+	var user UserParams
+
+	if err := c.ShouldBindJSON(&user); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	if user.Email == "" || user.Username == "" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Email and Username are required"})
+		return
+	}
+	if user.Role != "admin" && user.Role != "user" {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid role"})
+		return
+	}
+	if user.Role == "admin" {
+		// Get the Authorization header
+		authHeader := c.GetHeader("Authorization")
+		if authHeader == "" {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authorization header required for admin creation"})
+			return
+		}
+		tokenString := strings.TrimPrefix(authHeader, "Bearer ")
+		if tokenString == authHeader {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid authorization header format"})
+			return
+		}
+
+		userID, userRole, err := a.server.tokenController.VerifyToken(tokenString)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+			return
+		}
+		if userRole != "admin" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can create admin users"})
+			return
+		}
+		requestingUser, err := a.server.queries.GetUserByID(context.Background(), userID)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				c.JSON(http.StatusUnauthorized, gin.H{"error": "User not found"})
+				return
+			}
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to verify user"})
+			return
+		}
+		if requestingUser.Role != "admin" {
+			c.JSON(http.StatusForbidden, gin.H{"error": "Only admins can create admin users"})
+			return
+		}
+	}
+	hashedPassword, err := utils.GenerateHashedPassword(user.Password)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	arg := db.CreateUserParams{
+		Email:          user.Email,
+		HashedPassword: hashedPassword,
+		Username:       user.Username,
+		Role:           user.Role,
+	}
+
+	newUser, err := a.server.queries.CreateUser(context.Background(), arg)
+	if err != nil {
+		if pgErr, ok := err.(*pq.Error); ok {
+			switch pgErr.Constraint {
+			case "users_email_key":
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Email already exists"})
+				return
+			case "users_username_key":
+				c.JSON(http.StatusBadRequest, gin.H{"error": "Username already exists"})
+				return
+			}
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusCreated, UserResponse{}.toUserResponse(&newUser))
+}
+
+/*
 func (a *Auth) register(c *gin.Context) {
 	var user UserParams
 
@@ -148,3 +233,5 @@ func (a *Auth) register(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, UserResponse{}.toUserResponse(&newUser))
 }
+
+*/
